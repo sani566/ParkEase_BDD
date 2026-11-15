@@ -1,0 +1,41 @@
+
+name: ParkEase BDD Tests
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install behave behave-html-formatter
+
+      - name: Run smoke tests and generate HTML report
+        run: |
+          mkdir -p reports
+          python -m behave --tags=@smoke \
+            -f behave_html_formatter:HTMLFormatter \
+            -o reports/behave-report.html
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ParkEase-Smoke-Test-Report
+          path: reports/behave-report.html
+          if-no-files-found: warn
